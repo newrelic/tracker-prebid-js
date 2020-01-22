@@ -1,0 +1,26 @@
+{
+  "name": "newrelic-prebid",
+  "version": "0.1.0",
+  "description": "New Relic tracker for Prebid",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack -p",
+    "build:dev": "webpack",
+    "watch": "webpack -p --progress --color --watch",
+    "watch:dev": "webpack --progress --color --watch",
+    "prezip": "npm run build",
+    "zip": "zip -P newrelic -x '*.DS_Store' 'agent.js' '*.map' -r prebid.zip dist samples README.md CHANGELOG.md EULA.md",
+    "clean": "rm -rf dist *.zip"
+  },
+  "author": "Andreu Santarén Llop",
+  "license": "MIT",
+  "dependencies": {
+    "newrelic-video-core": "github:newrelic/video-core-js"
+  },
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-preset-env": "^1.6.0",
+    "webpack": "^3.12.0"
+  }
+}
