@@ -1,50 +1,100 @@
 <html>
+
   <head>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
     <!-- newrelic browser agent. REMEMBER TO REPLACE THIS SCRIPT WITH YOUR OWN BROWSER AGENT -->
     <script type="text/javascript" src="agent.js"></script>
+    <!-- newrelic Prebid Tracker -->
+    <script type="text/javascript" src="../dist/newrelic-prebid.min.js"></script>
 
-    <!-- newrelic GPT Tracker -->
-    <script type="text/javascript" src="../dist/newrelic-google-publisher-tag.min.js"></script>
+    <script async src="//www.googletagservices.com/tag/js/gpt.js"></script>
+    <script async src="//acdn.adnxs.com/prebid/not-for-prod/1/prebid.js"></script>
+    <script>
+      var sizes = [
+        [300, 250]
+      ];
+      var PREBID_TIMEOUT = 1500;
+      var FAILSAFE_TIMEOUT = 3000;
 
-    <!-- google tags -->
-    <script type="text/javascript">
+      var adUnits = [{
+        code: '/19968336/header-bid-tag-1',
+        mediaTypes: {
+          banner: {
+            sizes: sizes
+          }
+        },
+        bids: [{
+          bidder: 'appnexus',
+          params: {
+            placementId: 13144370
+          }
+        }]
+      }];
+
+      // ======== DO NOT EDIT BELOW THIS LINE =========== //
       var googletag = googletag || {};
       googletag.cmd = googletag.cmd || [];
-      (function() {
-        var gads = document.createElement("script");
-        gads.async = true;
-        gads.type = "text/javascript";
-        var useSSL = "https:" == document.location.protocol;
-        gads.src = (useSSL ? "https:" : "http:") + "//www.googletagservices.com/tag/js/gpt.js";
-        var node =document.getElementsByTagName("script")[0];
-        node.parentNode.insertBefore(gads, node);
-       })();
-    </script>
-
-    <script type="text/javascript">
       googletag.cmd.push(function() {
-        var adSlot1 = googletag.defineSlot('/6355419/Travel/Europe/France/Paris',[300, 250], "banner1")
-        adSlot1.addService(googletag.pubads())
-        googletag.pubads().setTargeting('interests', ['music', 'sports']);
-        googletag.pubads().setTargeting('age', '18-55');
-        googletag.enableServices()
+        googletag.pubads().disableInitialLoad();
+        console.log("Google Tag initial load");
+      });
 
-        // Init New Relic GPT Tracker
-        let tracker = nrvideo.GooglePublisherTagTracker.init()
-        // Optional: only include the selected targeting keys. By default all keys will be included.
-        if (tracker != null) {
-          tracker.setTargetingKey("age")
-        }
-      })
+      var pbjs = pbjs || {};
+      pbjs.que = pbjs.que || [];
+
+      pbjs.que.push(function() {
+        // Init Prebid tracker
+        nrvideo.PrebidTracker.init(pbjs)
+
+        pbjs.addAdUnits(adUnits);
+        pbjs.requestBids({
+          bidsBackHandler: initAdserver,
+          timeout: PREBID_TIMEOUT
+        });
+      });
+
+      function initAdserver() {
+        console.log("initAdserver");
+        if (pbjs.initAdserverSet) return;
+        pbjs.initAdserverSet = true;
+        googletag.cmd.push(function() {
+          console.log("Google Tag refresh");
+          pbjs.setTargetingForGPTAsync && pbjs.setTargetingForGPTAsync();
+          googletag.pubads().refresh();
+        });
+      }
+
+      // in case PBJS doesn't load
+      setTimeout(function() {
+        console.log("Set Timeout");
+        initAdserver();
+      }, FAILSAFE_TIMEOUT);
+
+      googletag.cmd.push(function() {
+        console.log("Google Tag enable service");
+        googletag.defineSlot('/19968336/header-bid-tag-1', sizes, 'div-1')
+          .addService(googletag.pubads());
+        googletag.pubads().enableSingleRequest();
+        googletag.enableServices();
+      });
+
     </script>
+
   </head>
+
   <body>
-      <p>Hello world GPT Ad!</p>
-      <div style="height: 1500px;">---Spacer---</div>      
-      <div id="banner1" style="width:300px; height:250px;"></div>
-      <div style="height: 1500px;">---Spacer---</div>
-      <script type="text/javascript">
-        googletag.cmd.push(function() { googletag.display('banner1'); });
+    <h2>Basic Prebid.js Example</h2>
+    <h5>Div-1</h5>
+    <div id='div-1'>
+      <script type='text/javascript'>
+        googletag.cmd.push(function() {
+          console.log("Google Tag display");
+          googletag.display('div-1');
+        });
+
       </script>
+    </div>
   </body>
+
 </html>
