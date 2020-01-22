@@ -9,7 +9,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   static init (pbjs) {
     nrvideo.Log.debug('PrebidTracker init ', pbjs)
-    
+
     let trackers = nrvideo.Core.getTrackers()
     for (let i = 0 ; i < trackers.length ; i++) {
       if (trackers[i] instanceof PrebidTracker) {
@@ -74,84 +74,84 @@ export default class PrebidTracker extends nrvideo.Tracker {
   /**
    * Called once Prebid fires 'auctionInit' event.
    */
-  onAuctionInit () {
-    nrvideo.Log.debug('onAuctionInit')
+  onAuctionInit (data) {
+    nrvideo.Log.debug('onAuctionInit, data =', data)
   }
 
   /**
    * Called once Prebid fires 'auctionEnd' event.
    */
-  onAuctionEnd () {
-    nrvideo.Log.debug('onAuctionEnd')
+  onAuctionEnd (data) {
+    nrvideo.Log.debug('onAuctionEnd, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidAdjustment' event.
    */
-  onBidAdjustment () {
-    nrvideo.Log.debug('onBidAdjustment')
+  onBidAdjustment (data) {
+    nrvideo.Log.debug('onBidAdjustment, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidTimeout' event.
    */
-  onBidTimeout () {
-    nrvideo.Log.debug('onBidTimeout')
+  onBidTimeout (data) {
+    nrvideo.Log.debug('onBidTimeout, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidRequested' event.
    */
-  onBidRequested () {
-    nrvideo.Log.debug('onBidRequested')
+  onBidRequested (data) {
+    nrvideo.Log.debug('onBidRequested, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidResponse' event.
    */
-  onBidResponse () {
-    nrvideo.Log.debug('onBidResponse')
+  onBidResponse (data) {
+    nrvideo.Log.debug('onBidResponse, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidWon' event.
    */
-  onBidWon () {
-    nrvideo.Log.debug('onBidWon')
+  onBidWon (data) {
+    nrvideo.Log.debug('onBidWon, data =', data)
   }
 
   /**
    * Called once Prebid fires 'setTargeting' event.
    */
-  onSetTargeting () {
-    nrvideo.Log.debug('onSetTargeting')
+  onSetTargeting (data) {
+    nrvideo.Log.debug('onSetTargeting, data =', data)
   }
 
   /**
    * Called once Prebid fires 'requestBids' event.
    */
-  onRequestBids () {
-    nrvideo.Log.debug('onRequestBids')
+  onRequestBids (data) {
+    nrvideo.Log.debug('onRequestBids, data =', data)
   }
 
   /**
    * Called once Prebid fires 'addAdUnits' event.
    */
-  onAddAdUnits () {
-    nrvideo.Log.debug('onAddAdUnits')
+  onAddAdUnits (data) {
+    nrvideo.Log.debug('onAddAdUnits, data =', data)
   }
 
   /**
    * Called once Prebid fires 'adRenderFailed' event.
    */
-  onAdRenderFailed () {
-    nrvideo.Log.debug('onAdRenderFailed')
+  onAdRenderFailed (data) {
+    nrvideo.Log.debug('onAdRenderFailed, data =', data)
   }
 
   /**
    * Called once Prebid fires 'bidderDone' event.
    */
-  onBidderDone () {
-    nrvideo.Log.debug('onBidderDone')
+  onBidderDone (data) {
+    nrvideo.Log.debug('onBidderDone, data =', data)
   }
 }

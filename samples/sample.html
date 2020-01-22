@@ -54,10 +54,13 @@
         });
       });
 
-      function initAdserver() {
-        console.log("initAdserver");
+      function initAdserver(bids) {
         if (pbjs.initAdserverSet) return;
         pbjs.initAdserverSet = true;
+
+        //TODO: should we capture this event in the tracker? HOW?
+        console.log("initAdserver, bids =", bids);
+
         googletag.cmd.push(function() {
           console.log("Google Tag refresh");
           pbjs.setTargetingForGPTAsync && pbjs.setTargetingForGPTAsync();
