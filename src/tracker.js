@@ -84,9 +84,8 @@ export default class PrebidTracker extends nrvideo.Tracker {
   parseBidAttributes (data) {
     let attributes = {}
     if (data != undefined) {
-      if ("bidderCode" in data) {
-        attributes["bidderCode"] = data["bidderCode"]
-      }
+      attributes["bidderCode"] = "bidderCode" in data ? data["bidderCode"] : undefined
+      attributes["mediaType"] = "mediaType" in data ? data["mediaType"] : undefined
 
       //TODO: generate attributes from event's data
     }
