@@ -18,6 +18,13 @@ export default class PrebidTracker extends nrvideo.Tracker {
     }
 
     let tracker = new PrebidTracker()
+
+    /**
+     * Internal reference to prebid object.
+     * @private
+     */
+    tracker._pbjs = pbjs
+
     nrvideo.Core.addTracker(tracker)
     tracker.registerListeners(pbjs)
     return tracker
@@ -57,18 +64,30 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Register listeners.
    */
   registerListeners (pbjs) {
-    pbjs.onEvent('auctionInit', this.onAuctionInit)
-    pbjs.onEvent('auctionEnd', this.onAuctionEnd)
-    pbjs.onEvent('bidAdjustment', this.onBidAdjustment)
-    pbjs.onEvent('bidTimeout', this.onBidTimeout)
-    pbjs.onEvent('bidRequested', this.onBidRequested)
-    pbjs.onEvent('bidResponse', this.onBidResponse)
-    pbjs.onEvent('bidWon', this.onBidWon)
-    pbjs.onEvent('setTargeting', this.onSetTargeting)
-    pbjs.onEvent('requestBids', this.onRequestBids)
-    pbjs.onEvent('addAdUnits', this.onAddAdUnits)
-    pbjs.onEvent('adRenderFailed', this.onAdRenderFailed)
-    pbjs.onEvent('bidderDone', this.onBidderDone)
+    pbjs.onEvent('auctionInit', this.onAuctionInit.bind(this))
+    pbjs.onEvent('auctionEnd', this.onAuctionEnd.bind(this))
+    pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
+    pbjs.onEvent('bidTimeout', this.onBidTimeout.bind(this))
+    pbjs.onEvent('bidRequested', this.onBidRequested.bind(this))
+    pbjs.onEvent('bidResponse', this.onBidResponse.bind(this))
+    pbjs.onEvent('bidWon', this.onBidWon.bind(this))
+    pbjs.onEvent('setTargeting', this.onSetTargeting.bind(this))
+    pbjs.onEvent('requestBids', this.onRequestBids.bind(this))
+    pbjs.onEvent('addAdUnits', this.onAddAdUnits.bind(this))
+    pbjs.onEvent('adRenderFailed', this.onAdRenderFailed.bind(this))
+    pbjs.onEvent('bidderDone', this.onBidderDone.bind(this))
+  }
+
+  /**
+   * Parses bid object to create attributes to send to new relic.
+   */
+  parseBidAttributes (data) {
+    let attributes = {}
+    if (data != undefined) {
+      //TODO: add atributes from event's data
+    }
+    //TODO: generate basic attributes
+    return attributes
   }
 
   /**
@@ -76,6 +95,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onAuctionInit (data) {
     nrvideo.Log.debug('onAuctionInit, data =', data)
+    this.send('BID_AUCTION_INIT', this.parseBidAttributes(data))
   }
 
   /**
@@ -83,6 +103,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onAuctionEnd (data) {
     nrvideo.Log.debug('onAuctionEnd, data =', data)
+    this.send('BID_AUCTION_END', this.parseBidAttributes(data))
   }
 
   /**
@@ -90,6 +111,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidAdjustment (data) {
     nrvideo.Log.debug('onBidAdjustment, data =', data)
+    this.send('BID_ADJUSTMENT', this.parseBidAttributes(data))
   }
 
   /**
@@ -97,6 +119,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidTimeout (data) {
     nrvideo.Log.debug('onBidTimeout, data =', data)
+    this.send('BID_TIMEOUT', this.parseBidAttributes(data))
   }
 
   /**
@@ -104,6 +127,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidRequested (data) {
     nrvideo.Log.debug('onBidRequested, data =', data)
+    this.send('BID_REQUESTED', this.parseBidAttributes(data))
   }
 
   /**
@@ -111,6 +135,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidResponse (data) {
     nrvideo.Log.debug('onBidResponse, data =', data)
+    this.send('BID_RESPONSE', this.parseBidAttributes(data))
   }
 
   /**
@@ -118,6 +143,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidWon (data) {
     nrvideo.Log.debug('onBidWon, data =', data)
+    this.send('BID_WON', this.parseBidAttributes(data))
   }
 
   /**
@@ -125,6 +151,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onSetTargeting (data) {
     nrvideo.Log.debug('onSetTargeting, data =', data)
+    this.send('BID_SET_TARGETING', this.parseBidAttributes(data))
   }
 
   /**
@@ -132,6 +159,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onRequestBids (data) {
     nrvideo.Log.debug('onRequestBids, data =', data)
+    this.send('BID_REQUEST_BIDS', this.parseBidAttributes(data))
   }
 
   /**
@@ -139,6 +167,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onAddAdUnits (data) {
     nrvideo.Log.debug('onAddAdUnits, data =', data)
+    this.send('BID_ADD_AD_UNITS', this.parseBidAttributes(data))
   }
 
   /**
@@ -146,6 +175,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onAdRenderFailed (data) {
     nrvideo.Log.debug('onAdRenderFailed, data =', data)
+    this.send('BID_AD_RENDER_FAILED', this.parseBidAttributes(data))
   }
 
   /**
@@ -153,5 +183,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidderDone (data) {
     nrvideo.Log.debug('onBidderDone, data =', data)
+    this.send('BID_BIDDER_DONE', this.parseBidAttributes(data))
   }
 }
