@@ -47,6 +47,12 @@ export default class PrebidTracker extends nrvideo.Tracker {
      */
     this._timeSinceBidAddAdUnits = new nrvideo.Chrono()
 
+    /**
+     * Time since last BID_REQUEST_BIDS event, in milliseconds.
+     * @private
+     */
+    this._timeSinceBidRequestBids = new nrvideo.Chrono()
+
     //----------
     //----------
     //----------
@@ -107,6 +113,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
     
     // Generate time since attributes
     attributes["timeSinceBidAddAdUnits"] = this._timeSinceBidAddAdUnits.getDeltaTime()
+    attributes["timeSinceBidRequestBids"] = this._timeSinceBidRequestBids.getDeltaTime()
 
     return attributes
   }
@@ -181,6 +188,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onRequestBids (data) {
     nrvideo.Log.debug('onRequestBids, data =', data)
     this.send('BID_REQUEST_BIDS', this.parseBidAttributes(data))
+    this._timeSinceBidRequestBids.start()
   }
 
   /**
