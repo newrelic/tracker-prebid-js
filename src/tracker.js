@@ -41,7 +41,21 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
   /** Resets all flags and chronos. */
   reset () {
-    //TODO: init timeSinceXXX attributes
+    /**
+     * Time since last BID_ADD_AD_UNITS event, in milliseconds.
+     * @private
+     */
+    this._timeSinceBidAddAdUnits = new nrvideo.Chrono()
+
+    //----------
+    //----------
+    //----------
+
+    /**
+     * Time since last BID_ event, in milliseconds.
+     * @private
+     */
+    this._timeSinceBid = new nrvideo.Chrono()
   }
 
   /**
@@ -83,13 +97,17 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   parseBidAttributes (data) {
     let attributes = {}
+
     if (data != undefined) {
       attributes["bidderCode"] = "bidderCode" in data ? data["bidderCode"] : undefined
       attributes["mediaType"] = "mediaType" in data ? data["mediaType"] : undefined
 
       //TODO: generate attributes from event's data
     }
-    //TODO: generate basic attributes (timeSinceXXX, etc)
+    
+    // Generate time since attributes
+    attributes["timeSinceBidAddAdUnits"] = this._timeSinceBidAddAdUnits.getDeltaTime()
+
     return attributes
   }
 
@@ -171,6 +189,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onAddAdUnits (data) {
     nrvideo.Log.debug('onAddAdUnits, data =', data)
     this.send('BID_ADD_AD_UNITS', this.parseBidAttributes(data))
+    this._timeSinceBidAddAdUnits.start()
   }
 
   /**
