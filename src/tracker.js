@@ -77,15 +77,23 @@ export default class PrebidTracker extends nrvideo.Tracker {
      */
     this._timeSinceBidAuctionEnd = new nrvideo.Chrono()
 
-    //----------
-    //----------
-    //----------
-
     /**
-     * Time since last BID_ event, in milliseconds.
+     * Time since last BID_SET_TARGETING event, in milliseconds.
      * @private
      */
-    this._timeSinceBid = new nrvideo.Chrono()
+    this._timeSinceBidSetTargeting = new nrvideo.Chrono()
+
+    /**
+     * Time since last BID_BIDDER_DONE event, in milliseconds.
+     * @private
+     */
+    this._timeSinceBidBidderDone = new nrvideo.Chrono()
+
+    /**
+     * Time since last BID_WON event, in milliseconds.
+     * @private
+     */
+    this._timeSinceBidWon = new nrvideo.Chrono()
   }
 
   /**
@@ -142,6 +150,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
     attributes["timeSinceBidRequested"] = this._timeSinceBidRequested.getDeltaTime()
     attributes["timeSinceBidResponse"] = this._timeSinceBidResponse.getDeltaTime()
     attributes["timeSinceBidAuctionEnd"] = this._timeSinceBidAuctionEnd.getDeltaTime()
+    attributes["timeSinceBidSetTargeting"] = this._timeSinceBidSetTargeting.getDeltaTime()
+    attributes["timeSinceBidBidderDone"] = this._timeSinceBidBidderDone.getDeltaTime()
+    attributes["timeSinceBidWon"] = this._timeSinceBidWon.getDeltaTime()
 
     return attributes
   }
@@ -204,6 +215,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidWon (data) {
     nrvideo.Log.debug('onBidWon, data =', data)
     this.send('BID_WON', this.parseBidAttributes(data))
+    this._timeSinceBidWon.start()
   }
 
   /**
@@ -212,6 +224,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onSetTargeting (data) {
     nrvideo.Log.debug('onSetTargeting, data =', data)
     this.send('BID_SET_TARGETING', this.parseBidAttributes(data))
+    this._timeSinceBidSetTargeting.start()
   }
 
   /**
@@ -246,5 +259,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidderDone (data) {
     nrvideo.Log.debug('onBidderDone, data =', data)
     this.send('BID_BIDDER_DONE', this.parseBidAttributes(data))
+    this._timeSinceBidBidderDone.start()
   }
 }
