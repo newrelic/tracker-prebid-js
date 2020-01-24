@@ -10,6 +10,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   static init (pbjs) {
     nrvideo.Log.debug('PrebidTracker init ', pbjs)
 
+    // Look for an existing prebid tracker instance
     let trackers = nrvideo.Core.getTrackers()
     for (let i = 0 ; i < trackers.length ; i++) {
       if (trackers[i] instanceof PrebidTracker) {
@@ -19,6 +20,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
     let tracker = new PrebidTracker()
 
+    // TODO: check if it's necessary, otherwise is better not to keep a reference to the prebid object
     /**
      * Internal reference to prebid object.
      * @private
