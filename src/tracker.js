@@ -136,12 +136,11 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Parses bid object to create attributes to send to new relic.
    */
   parseBidAttributes (attributes) {
-    //nrvideo.Log.debug('parseBidAttributes, data =', data)
-
     attributes = attributes || {}
 
     attributes["libVersion"] = this._pbjs.version
     
+    // TODO: timeSinceBidXXX are not generic for the tracker, but referenced to ad slot or bidder code.
     // Generate time since attributes
     attributes["timeSinceBidAddAdUnits"] = this._timeSinceBidAddAdUnits.getDeltaTime()
     attributes["timeSinceBidRequestBids"] = this._timeSinceBidRequestBids.getDeltaTime()
@@ -153,7 +152,20 @@ export default class PrebidTracker extends nrvideo.Tracker {
     attributes["timeSinceBidBidderDone"] = this._timeSinceBidBidderDone.getDeltaTime()
     attributes["timeSinceBidWon"] = this._timeSinceBidWon.getDeltaTime()
 
+    //nrvideo.Log.debug('-----> parseBidAttributes, getBidResponses =', this._pbjs.getBidResponses())
+
     return attributes
+  }
+
+  /**
+   * Parses slot specific attributes.
+   */
+  parseSlotSpecificAttributes (data) {
+    let attr = {
+      "bidderCode": data["bidderCode"],
+      "mediaType": data["mediaType"]
+    }
+    return attr
   }
 
   /**
@@ -179,10 +191,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidAdjustment (data) {
     nrvideo.Log.debug('onBidAdjustment, data =', data)
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"]
-    }
+    let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_ADJUSTMENT', this.parseBidAttributes(attr))
   }
 
@@ -211,10 +220,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidResponse (data) {
     nrvideo.Log.debug('onBidResponse, data =', data)
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"]
-    }
+    let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_RESPONSE', this.parseBidAttributes(attr))
     this._timeSinceBidResponse.start()
   }
@@ -224,10 +230,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidWon (data) {
     nrvideo.Log.debug('onBidWon, data =', data)
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"]
-    }
+    let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_WON', this.parseBidAttributes(attr))
     this._timeSinceBidWon.start()
   }
