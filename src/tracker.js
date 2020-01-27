@@ -158,12 +158,14 @@ export default class PrebidTracker extends nrvideo.Tracker {
   }
 
   /**
-   * Parses slot specific attributes.
+   * Parses slot specific (ad unit) attributes.
    */
   parseSlotSpecificAttributes (data) {
     let attr = {
       "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"]
+      "mediaType": data["mediaType"],
+      "adUnitCode": data["adUnitCode"],
+      "size": data["width"] + 'x' + data["height"]
     }
     return attr
   }
