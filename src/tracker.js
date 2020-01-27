@@ -136,7 +136,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Parses bid object to create attributes to send to new relic.
    */
   parseBidAttributes (data) {
-    let attributes = {}
+    let attributes = {
+      "libVersion": this._pbjs.version
+    }
 
     if (data != undefined) {
       attributes["bidderCode"] = "bidderCode" in data ? data["bidderCode"] : undefined
