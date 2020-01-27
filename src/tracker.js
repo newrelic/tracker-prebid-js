@@ -171,6 +171,17 @@ export default class PrebidTracker extends nrvideo.Tracker {
   }
 
   /**
+   * Parses bidder specific attributes.
+   */
+  parseBidderSpecificAttributes (data) {
+    let attr = {
+      "bidderCode": data["bidderCode"],
+      "referer": data["refererInfo"]["referer"]
+    }
+    return attr
+  }
+
+  /**
    * Called once Prebid fires 'auctionInit' event.
    */
   onAuctionInit (data) {
@@ -210,9 +221,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidRequested (data) {
     nrvideo.Log.debug('onBidRequested, data =', data)
-    let attr = {
-      "bidderCode": data["bidderCode"]
-    }
+    let attr = this.parseBidderSpecificAttributes(data)
     this.send('BID_REQUESTED', this.parseBidAttributes(attr))
     this._timeSinceBidRequested.start()
   }
@@ -277,9 +286,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    */
   onBidderDone (data) {
     nrvideo.Log.debug('onBidderDone, data =', data)
-    let attr = {
-      "bidderCode": data["bidderCode"]
-    }
+    let attr = this.parseBidderSpecificAttributes(data)
     this.send('BID_BIDDER_DONE', this.parseBidAttributes(attr))
     this._timeSinceBidBidderDone.start()
   }
