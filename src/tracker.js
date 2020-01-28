@@ -167,6 +167,27 @@ export default class PrebidTracker extends nrvideo.Tracker {
       "adUnitCode": data["adUnitCode"],
       "size": data["width"] + 'x' + data["height"]
     }
+
+    if (data["adserverTargeting"] != undefined) {
+      attr = Object.assign(attr, {
+        "hbAdid" : data["adserverTargeting"]["hb_adid"],
+        "hbBidder" : data["adserverTargeting"]["hb_bidder"],
+        "hbFormat" : data["adserverTargeting"]["hb_format"],
+        "hbPb" : data["adserverTargeting"]["hb_pb"],
+        "hbSize" : data["adserverTargeting"]["hb_size"],
+        "hbSource" : data["adserverTargeting"]["hb_source"]
+      })
+    }
+
+    if (data["params"] != undefined && Array.isArray(data["params"])) {
+      if (data["params"].length > 0) {
+        let firstParam = data["params"][0]
+        if (firstParam["placementId"] != undefined) {
+          attr["placementId"] = firstParam["placementId"]
+        }
+      }
+    }
+
     return attr
   }
 
