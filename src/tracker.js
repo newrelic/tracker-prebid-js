@@ -20,12 +20,11 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
     let tracker = new PrebidTracker()
 
-    // TODO: check if it's necessary, otherwise is better not to keep a reference to the prebid object
     /**
-     * Internal reference to prebid object.
+     * Prebid lib version
      * @private
      */
-    tracker._pbjs = pbjs
+    tracker._pbVersion = pbjs.version
 
     nrvideo.Core.addTracker(tracker)
     tracker.registerListeners(pbjs)
@@ -138,7 +137,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   parseBidAttributes (attributes) {
     attributes = attributes || {}
 
-    attributes["libVersion"] = this._pbjs.version
+    attributes["libVersion"] = this._pbVersion
     
     // TODO: timeSinceBidXXX are not generic for the tracker, but referenced to ad slot or bidder code.
     // Generate time since attributes
@@ -151,8 +150,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
     attributes["timeSinceBidSetTargeting"] = this._timeSinceBidSetTargeting.getDeltaTime()
     attributes["timeSinceBidBidderDone"] = this._timeSinceBidBidderDone.getDeltaTime()
     attributes["timeSinceBidWon"] = this._timeSinceBidWon.getDeltaTime()
-
-    //nrvideo.Log.debug('-----> parseBidAttributes, getBidResponses =', this._pbjs.getBidResponses())
 
     return attributes
   }
@@ -181,6 +178,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
     if (Array.isArray(data["params"])) {
       if (data["params"].length > 0) {
+        //TODO: hardcoded first position of array. Is it correct? We should test with multiple bidders
         let firstParam = data["params"][0]
         if (firstParam["placementId"] != undefined) {
           attr["placementId"] = firstParam["placementId"]
