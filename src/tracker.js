@@ -119,7 +119,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   registerListeners (pbjs) {
     pbjs.onEvent('auctionInit', this.onAuctionInit.bind(this))
     pbjs.onEvent('auctionEnd', this.onAuctionEnd.bind(this))
-    pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
+    //pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
     pbjs.onEvent('bidTimeout', this.onBidTimeout.bind(this))
     pbjs.onEvent('bidRequested', this.onBidRequested.bind(this))
     pbjs.onEvent('bidResponse', this.onBidResponse.bind(this))
@@ -167,12 +167,12 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
     if (data["adserverTargeting"] != undefined) {
       attr = Object.assign(attr, {
-        "hbAdid" : data["adserverTargeting"]["hb_adid"],
         "hbBidder" : data["adserverTargeting"]["hb_bidder"],
         "hbFormat" : data["adserverTargeting"]["hb_format"],
         "hbPb" : data["adserverTargeting"]["hb_pb"],
         "hbSize" : data["adserverTargeting"]["hb_size"],
-        "hbSource" : data["adserverTargeting"]["hb_source"]
+        //"hbAdid" : data["adserverTargeting"]["hb_adid"],
+        //"hbSource" : data["adserverTargeting"]["hb_source"]
       })
     }
 
