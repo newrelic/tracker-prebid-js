@@ -50,12 +50,11 @@
                         }
                     },
                     {
-                        bidder: "example",
-                            params: {
-                                placement: '12345'
-                            }
+                        bidder: "newAlias",
+                        params: {
+                            placementId: 13144370
                         }
-                    ]
+                    }]
                 }
             ];
 
@@ -73,6 +72,8 @@
                 // Init Prebid tracker
                 nrvideo.PrebidTracker.init(pbjs)
 
+                pbjs.aliasBidder('appnexus', 'newAlias');
+                
                 pbjs.addAdUnits(adUnits);
                 pbjs.requestBids({
                     bidsBackHandler: initAdserver,
