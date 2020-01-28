@@ -179,7 +179,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
       })
     }
 
-    if (data["params"] != undefined && Array.isArray(data["params"])) {
+    if (Array.isArray(data["params"])) {
       if (data["params"].length > 0) {
         let firstParam = data["params"][0]
         if (firstParam["placementId"] != undefined) {
