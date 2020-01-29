@@ -71,30 +71,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
      * @private
      */
     this._timeSinceBidSetTargeting = new nrvideo.Chrono()
-
-    /**
-     * Time since last BID_REQUESTED event, in milliseconds.
-     * @private
-     */
-    //this._timeSinceBidRequested = new nrvideo.Chrono()
-
-    /**
-     * Time since last BID_RESPONSE event, in milliseconds.
-     * @private
-     */
-    //this._timeSinceBidResponse = new nrvideo.Chrono()
-
-    /**
-     * Time since last BID_BIDDER_DONE event, in milliseconds.
-     * @private
-     */
-    //this._timeSinceBidBidderDone = new nrvideo.Chrono()
-
-    /**
-     * Time since last BID_WON event, in milliseconds.
-     * @private
-     */
-    //this._timeSinceBidWon = new nrvideo.Chrono()
   }
 
   /**
@@ -145,12 +121,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
     attributes["timeSinceBidAuctionInit"] = this._timeSinceBidAuctionInit.getDeltaTime()
     attributes["timeSinceBidAuctionEnd"] = this._timeSinceBidAuctionEnd.getDeltaTime()
     attributes["timeSinceBidSetTargeting"] = this._timeSinceBidSetTargeting.getDeltaTime()
-    /*
-    attributes["timeSinceBidRequested"] = this._timeSinceBidRequested.getDeltaTime()
-    attributes["timeSinceBidResponse"] = this._timeSinceBidResponse.getDeltaTime()
-    attributes["timeSinceBidBidderDone"] = this._timeSinceBidBidderDone.getDeltaTime()
-    attributes["timeSinceBidWon"] = this._timeSinceBidWon.getDeltaTime()
-    */
 
     return attributes
   }
@@ -243,7 +213,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
     nrvideo.Log.debug('onBidRequested, data =', data)
     let attr = this.parseBidderSpecificAttributes(data)
     this.send('BID_REQUESTED', this.parseBidAttributes(attr))
-    //this._timeSinceBidRequested.start()
   }
 
   /**
@@ -253,7 +222,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
     nrvideo.Log.debug('onBidResponse, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_RESPONSE', this.parseBidAttributes(attr))
-    //this._timeSinceBidResponse.start()
   }
 
   /**
@@ -263,7 +231,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
     nrvideo.Log.debug('onBidWon, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_WON', this.parseBidAttributes(attr))
-    //this._timeSinceBidWon.start()
   }
 
   /**
@@ -308,6 +275,5 @@ export default class PrebidTracker extends nrvideo.Tracker {
     nrvideo.Log.debug('onBidderDone, data =', data)
     let attr = this.parseBidderSpecificAttributes(data)
     this.send('BID_BIDDER_DONE', this.parseBidAttributes(attr))
-    //this._timeSinceBidBidderDone.start()
   }
 }
