@@ -71,6 +71,18 @@ export default class PrebidTracker extends nrvideo.Tracker {
      * @private
      */
     this._timeSinceBidSetTargeting = new nrvideo.Chrono()
+
+    /**
+     * Bidder specific attributes.
+     * @private
+     */
+    this._bidderAttributes = {}
+
+    /**
+     * Slot specific attributes.
+     * @private
+     */
+    this._slotAttributes = {}
   }
 
   /**
@@ -106,6 +118,8 @@ export default class PrebidTracker extends nrvideo.Tracker {
     pbjs.onEvent('adRenderFailed', this.onAdRenderFailed.bind(this))
     pbjs.onEvent('bidderDone', this.onBidderDone.bind(this))
   }
+
+  //TODO: en comptes de diversos parseBidXX, un de sol que comprova la existència de tots els atributs.
 
   /**
    * Parses bid object to create attributes to send to new relic.
@@ -149,7 +163,6 @@ export default class PrebidTracker extends nrvideo.Tracker {
 
     if (Array.isArray(data["params"])) {
       if (data["params"].length > 0) {
-        //TODO: hardcoded first position of array. Is it correct? We should test with multiple bidders
         let firstParam = data["params"][0]
         if (firstParam["placementId"] != undefined) {
           attr["placementId"] = firstParam["placementId"]
@@ -167,6 +180,54 @@ export default class PrebidTracker extends nrvideo.Tracker {
     let attr = {
       "bidderCode": data["bidderCode"],
       "referer": data["refererInfo"]["referer"]
+    }
+    return attr
+  }
+
+  /**
+   * Add timer to bidder
+   */
+  addTimerToBidder (bidderCode, timerName) {
+    let crono = new nrvideo.Chrono()
+    crono.start()
+    if (this._bidderAttributes[bidderCode] == undefined) {
+      this._bidderAttributes[bidderCode] = {}
+    }
+    this._bidderAttributes[bidderCode][timerName] = crono
+  }
+
+  /**
+   * Add timer to slot
+   */
+  addTimerToSlot (adUnitCode, timerName) {
+    let crono = new nrvideo.Chrono()
+    crono.start()
+    if (this._slotAttributes[adUnitCode] == undefined) {
+      this._slotAttributes[adUnitCode] = {}
+    }
+    this._slotAttributes[adUnitCode][timerName] = crono
+  }
+
+  /**
+   * Generate timer attributes for a certain bidder code
+   */
+  generateTimerAttributesForBidder (bidderCode, attr) {
+    if (this._bidderAttributes[bidderCode] != undefined) {
+      for (const [key, value] of Object.entries(this._bidderAttributes[bidderCode])) {
+        attr[key] = value.getDeltaTime()
+      }
+    }
+    return attr
+  }
+
+    /**
+   * Generate timer attributes for a certain Ad Units code
+   */
+  generateTimerAttributesForSlot (adUnitCode, attr) {
+    if (this._slotAttributes[adUnitCode] != undefined) {
+      for (const [key, value] of Object.entries(this._slotAttributes[adUnitCode])) {
+        attr[key] = value.getDeltaTime()
+      }
     }
     return attr
   }
@@ -192,11 +253,13 @@ export default class PrebidTracker extends nrvideo.Tracker {
   /**
    * Called once Prebid fires 'bidAdjustment' event.
    */
+  /*
   onBidAdjustment (data) {
     nrvideo.Log.debug('onBidAdjustment, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_ADJUSTMENT', this.parseBidAttributes(attr))
   }
+  */
 
   /**
    * Called once Prebid fires 'bidTimeout' event.
@@ -212,7 +275,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidRequested (data) {
     nrvideo.Log.debug('onBidRequested, data =', data)
     let attr = this.parseBidderSpecificAttributes(data)
+    attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_REQUESTED', this.parseBidAttributes(attr))
+    this.addTimerToBidder(attr["bidderCode"], "timeSinceBidRequested")
   }
 
   /**
@@ -221,7 +286,11 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidResponse (data) {
     nrvideo.Log.debug('onBidResponse, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
+    attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
+    attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_RESPONSE', this.parseBidAttributes(attr))
+    this.addTimerToBidder(attr["bidderCode"], "timeSinceBidResponse")
+    this.addTimerToSlot(attr["adUnitCode"], "timeSinceBidResponse")
   }
 
   /**
@@ -230,7 +299,11 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidWon (data) {
     nrvideo.Log.debug('onBidWon, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
+    attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
+    attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_WON', this.parseBidAttributes(attr))
+    this.addTimerToBidder(attr["bidderCode"], "timeSinceBidWon")
+    this.addTimerToSlot(attr["adUnitCode"], "timeSinceBidWon")
   }
 
   /**
@@ -274,6 +347,8 @@ export default class PrebidTracker extends nrvideo.Tracker {
   onBidderDone (data) {
     nrvideo.Log.debug('onBidderDone, data =', data)
     let attr = this.parseBidderSpecificAttributes(data)
+    attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_BIDDER_DONE', this.parseBidAttributes(attr))
+    this.addTimerToBidder(attr["bidderCode"], "timeSinceBidBidderDone")
   }
 }
