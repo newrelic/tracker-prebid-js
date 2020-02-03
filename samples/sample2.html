@@ -3,6 +3,7 @@
     <head>
         <link rel="icon" type="image/png" href="/favicon.png">
 
+        <!-- newrelic browser agent. REMEMBER TO REPLACE THIS SCRIPT WITH YOUR OWN BROWSER AGENT -->
         <script type="text/javascript" src="agent.js"></script>
         <!-- newrelic Prebid Tracker -->
         <script type="text/javascript" src="../dist/newrelic-prebid.min.js"></script>
@@ -72,6 +73,7 @@
                 // Init Prebid tracker
                 nrvideo.PrebidTracker.init(pbjs)
 
+                // Create an alias to simulate multiple bidders
                 pbjs.aliasBidder('appnexus', 'newAlias');
                 
                 pbjs.addAdUnits(adUnits);
