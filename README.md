@@ -87,7 +87,7 @@ This attributes are sent along with `BID_REQUESTED` and `BID_BIDDER_DONE` action
 These timers are generated per `adUnitCode` and only sent along with the actions having the same slot code. Sent with actions `BID_RESONSE` and `BID_WON`.
 
 | Attribute | Description |
-|---|---|---|
+|---|---|
 | `timeSinceBidResponse` | Time since last `BID_RESPONSE` with the same `adUnitCode`. |
 | `timeSinceBidWon` | Time since last `BID_WON` with the same `adUnitCode`. |
 
@@ -95,7 +95,7 @@ These timers are generated per `adUnitCode` and only sent along with the actions
 These timers are generated per `bidderCode` and only sent along with the actions having the same bidder. Sent with actions `BID_REQUESTED`, `BID_RESONSE`, `BID_WON` and `BID_BIDDER_DONE`.
 
 | Attribute | Description |
-|---|---|---|
+|---|---|
 | `timeSinceBidRequested` | Time since last `BID_REQUESTED` with the same `bidderCode`. |
 | `timeSinceBidResponse` | Time since last `BID_RESPONSE` with the same `bidderCode`. |
 | `timeSinceBidWon` | Time since last `BID_WON` with the same `bidderCode`. |
