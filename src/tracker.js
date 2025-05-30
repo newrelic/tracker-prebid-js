@@ -107,7 +107,7 @@ export class PrebidTracker extends VideoTracker {
   registerListeners (pbjs) {
     pbjs.onEvent('auctionInit', this.onAuctionInit.bind(this))
     pbjs.onEvent('auctionEnd', this.onAuctionEnd.bind(this))
-    //pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
+    pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
     pbjs.onEvent('bidTimeout', this.onBidTimeout.bind(this))
     pbjs.onEvent('bidRequested', this.onBidRequested.bind(this))
     pbjs.onEvent('bidResponse', this.onBidResponse.bind(this))
@@ -154,8 +154,8 @@ export class PrebidTracker extends VideoTracker {
         "hbFormat" : data["adserverTargeting"]["hb_format"],
         "hbPb" : data["adserverTargeting"]["hb_pb"],
         "hbSize" : data["adserverTargeting"]["hb_size"],
-        //"hbAdid" : data["adserverTargeting"]["hb_adid"],
-        //"hbSource" : data["adserverTargeting"]["hb_source"]
+        "hbAdid" : data["adserverTargeting"]["hb_adid"],
+        "hbSource" : data["adserverTargeting"]["hb_source"]
       })
     }
 
@@ -251,13 +251,11 @@ export class PrebidTracker extends VideoTracker {
   /**
    * Called once Prebid fires 'bidAdjustment' event.
    */
-  /*
   onBidAdjustment (data) {
     Log.debug('onBidAdjustment, data =', data)
     let attr = this.parseSlotSpecificAttributes(data)
     this.send('BID_ADJUSTMENT', this.generateBidGenericAttributes(attr))
   }
-  */
 
   /**
    * Called once Prebid fires 'bidTimeout' event.

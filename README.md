@@ -69,6 +69,7 @@ The following event names are sent by the tracker as Browser Agent `Custom Event
 | `BID_ADD_AD_UNITS` | Ad units have been added to the auction. | *addAdUnits* |
 | `BID_AD_RENDER_FAILED` | Ad rendering failed. | *adRenderFailed* |
 | `BID_BIDDER_DONE` | A bidder has signaled they are done responding. | *bidderDone* |
+| `BID_ADJUSTMENT` | A bid was adjusted. | *bidAdjustment* |
 
 Check out the following link for more information on [Prebid events](http://prebid.org/dev-docs/publisher-api-reference.html#module_pbjs.onEvent).
 
@@ -100,6 +101,8 @@ This attributes are sent along with `BID_RESPONSE` and `BID_WON` actions.
 | `hbPb` | Price bucket. | *0.50* |
 | `hbSize` | Media size. | *100x200* |
 | `placementId` | Placement ID. | *13144370* |
+| `hbAdid` | Ad ID. | *123456* |
+| `hbSource` | A/B test results. | *s2s* |
 
 ### Bidder Specific Attributes
 
