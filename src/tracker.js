@@ -117,6 +117,11 @@ export class PrebidTracker extends VideoTracker {
     pbjs.onEvent('addAdUnits', this.onAddAdUnits.bind(this))
     pbjs.onEvent('adRenderFailed', this.onAdRenderFailed.bind(this))
     pbjs.onEvent('bidderDone', this.onBidderDone.bind(this))
+    pbjs.onEvent('bidRejected', this.onBidRejected.bind(this))
+    pbjs.onEvent('bidAccepted', this.onBidAccepted.bind(this))
+    pbjs.onEvent('bidderError', this.onBidderError.bind(this))
+    pbjs.onEvent('adRenderSucceeded', this.onAdRenderSucceeded.bind(this))
+    pbjs.onEvent('auctionDebug', this.onAuctionDebug.bind(this))
   }
 
   /**
@@ -138,47 +143,53 @@ export class PrebidTracker extends VideoTracker {
   }
 
   /**
-   * Parses slot specific (ad unit) attributes.
+   * Parses attributes.
    */
-  parseSlotSpecificAttributes (data) {
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"],
-      "adUnitCode": data["adUnitCode"],
-      "size": data["width"] + 'x' + data["height"]
+  parseAttributes (data) {
+    let attr = {};
+
+    this.assignKeyFrom(attr, "mediaType", data)
+    this.assignKeyFrom(attr, "adUnitCode", data)
+    this.assignKeyFrom(attr, "bidderCode", data)
+
+    if ("width" in data && "height" in data) {
+      attr["size"] = data["width"] + 'x' + data["height"]
     }
 
-    if (data["adserverTargeting"] != undefined) {
-      attr = Object.assign(attr, {
-        "hbBidder" : data["adserverTargeting"]["hb_bidder"],
-        "hbFormat" : data["adserverTargeting"]["hb_format"],
-        "hbPb" : data["adserverTargeting"]["hb_pb"],
-        "hbSize" : data["adserverTargeting"]["hb_size"],
-        "hbAdid" : data["adserverTargeting"]["hb_adid"],
-        "hbSource" : data["adserverTargeting"]["hb_source"]
-      })
+    if ("refererInfo" in data) {
+      this.assignKeyFrom(attr, "referer", data["refererInfo"])
+    }
+
+    this.assignKeyFrom(attr, "cpm", data)
+    this.assignKeyFrom(attr, "auctionId", data)
+
+    if ("adserverTargeting" in data) {
+      let adserverTargeting = data["adserverTargeting"]
+      this.assignKeyFrom(attr, "hb_bidder", adserverTargeting, "hbBidder")
+      this.assignKeyFrom(attr, "hb_format", adserverTargeting, "hbFormat")
+
+      if ("hb_pb" in adserverTargeting) {
+        let hb_pb = adserverTargeting["hb_pb"]
+        let hbPbNum = Number(hb_pb)
+        if (isNaN(hbPbNum)) {
+          attr["hbPb"] = hb_pb
+        } else {
+          attr["hbPb"] = hbPbNum
+        }
+      }
+      
+      this.assignKeyFrom(attr, "hb_size", adserverTargeting, "hbSize")
+      this.assignKeyFrom(attr, "hb_adid", adserverTargeting, "hbAdid")
+      this.assignKeyFrom(attr, "hb_source", adserverTargeting, "hbSource")
     }
 
     if (Array.isArray(data["params"])) {
       if (data["params"].length > 0) {
         let firstParam = data["params"][0]
-        if (firstParam["placementId"] != undefined) {
-          attr["placementId"] = firstParam["placementId"]
-        }
+        this.assignKeyFrom(attr, "placementId", firstParam)
       }
     }
 
-    return attr
-  }
-
-  /**
-   * Parses bidder specific attributes.
-   */
-  parseBidderSpecificAttributes (data) {
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "referer": data["refererInfo"]["referer"]
-    }
     return attr
   }
 
@@ -235,7 +246,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onAuctionInit (data) {
     Log.debug('onAuctionInit, data =', data)
-    this.send('BID_AUCTION_INIT', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_AUCTION_INIT', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAuctionInit.start()
   }
 
@@ -244,7 +256,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onAuctionEnd (data) {
     Log.debug('onAuctionEnd, data =', data)
-    this.send('BID_AUCTION_END', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_AUCTION_END', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAuctionEnd.start()
   }
 
@@ -253,7 +266,7 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidAdjustment (data) {
     Log.debug('onBidAdjustment, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    let attr = this.parseAttributes(data)
     this.send('BID_ADJUSTMENT', this.generateBidGenericAttributes(attr))
   }
 
@@ -262,7 +275,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidTimeout (data) {
     Log.debug('onBidTimeout, data =', data)
-    this.send('BID_TIMEOUT', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_TIMEOUT', this.generateBidGenericAttributes(attr))
   }
 
   /**
@@ -270,7 +284,7 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidRequested (data) {
     Log.debug('onBidRequested, data =', data)
-    let attr = this.parseBidderSpecificAttributes(data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_REQUESTED', this.generateBidGenericAttributes(attr))
     this.addTimerToBidder(attr["bidderCode"], "timeSinceBidRequested")
@@ -281,7 +295,7 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidResponse (data) {
     Log.debug('onBidResponse, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_RESPONSE', this.generateBidGenericAttributes(attr))
@@ -294,7 +308,7 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidWon (data) {
     Log.debug('onBidWon, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_WON', this.generateBidGenericAttributes(attr))
@@ -307,7 +321,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onSetTargeting (data) {
     Log.debug('onSetTargeting, data =', data)
-    this.send('BID_SET_TARGETING', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_SET_TARGETING', this.generateBidGenericAttributes(attr))
     this._timeSinceBidSetTargeting.start()
   }
 
@@ -316,7 +331,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onRequestBids (data) {
     Log.debug('onRequestBids, data =', data)
-    this.send('BID_REQUEST_BIDS', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_REQUEST_BIDS', this.generateBidGenericAttributes(attr))
     this._timeSinceBidRequestBids.start()
   }
 
@@ -325,7 +341,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onAddAdUnits (data) {
     Log.debug('onAddAdUnits, data =', data)
-    this.send('BID_ADD_AD_UNITS', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_ADD_AD_UNITS', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAddAdUnits.start()
   }
 
@@ -334,7 +351,8 @@ export class PrebidTracker extends VideoTracker {
    */
   onAdRenderFailed (data) {
     Log.debug('onAdRenderFailed, data =', data)
-    this.send('BID_AD_RENDER_FAILED', this.generateBidGenericAttributes())
+    let attr = this.parseAttributes(data)
+    this.send('BID_AD_RENDER_FAILED', this.generateBidGenericAttributes(attr))
   }
 
   /**
@@ -342,9 +360,49 @@ export class PrebidTracker extends VideoTracker {
    */
   onBidderDone (data) {
     Log.debug('onBidderDone, data =', data)
-    let attr = this.parseBidderSpecificAttributes(data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_BIDDER_DONE', this.generateBidGenericAttributes(attr))
     this.addTimerToBidder(attr["bidderCode"], "timeSinceBidBidderDone")
+  }
+
+  onBidRejected (data) {
+    Log.debug('TODO: onBidRejected, data =', data)
+    //TODO
+  }
+
+  onBidAccepted (data) {
+    Log.debug('TODO: onBidAccepted, data =', data)
+    //TODO
+  }
+
+  onBidderError (data) {
+    Log.debug('TODO: onBidderError, data =', data)
+    //TODO
+  }
+  
+  onAdRenderSucceeded (data) {
+    Log.debug('TODO: onAdRenderSucceeded, data =', data)
+    //TODO
+  }
+
+  onAuctionDebug (data) {
+    Log.debug('TODO: onAuctionDebug, data =', data)
+    //TODO
+  }
+
+  // Private methods
+
+  assignKeyFrom (obj, key, data, rename_key = "") {
+    if (key in data) {
+      if (rename_key !== "") {
+        obj[rename_key] = data[key]
+      } else {
+        obj[key] = data[key]
+      }
+      return true
+    } else {
+      return false
+    }
   }
 }
