@@ -69,6 +69,8 @@ The following event names are sent by the tracker as Browser Agent `Custom Event
 | `BID_ADD_AD_UNITS` | Ad units have been added to the auction. | *addAdUnits* |
 | `BID_AD_RENDER_FAILED` | Ad rendering failed. | *adRenderFailed* |
 | `BID_BIDDER_DONE` | A bidder has signaled they are done responding. | *bidderDone* |
+| `BID_ADJUSTMENT` | A bid was adjusted. | *bidAdjustment* |
+| `BID_AD_RENDER_SUCCEEDED` | Ad rendering succeeded. | *adRenderSucceeded* |
 
 Check out the following link for more information on [Prebid events](http://prebid.org/dev-docs/publisher-api-reference.html#module_pbjs.onEvent).
 
@@ -85,30 +87,25 @@ This is the list of attributes sent along with all `BID_` actions.
 | `timeSinceBidAuctionEnd` | Time since last `BID_AUCTION_END`. | *12356784* |
 | `timeSinceBidSetTargeting` | Time since last `BID_SET_TARGETING`. | *12356784* |
 
-### Slot Specific Attributes
+### Specific Attributes
 
-This attributes are sent along with `BID_RESPONSE` and `BID_WON` actions.
-
-| Attribute | Description | Example |
-|---|---|---|
-| `bidderCode` | Bidder code. | *appnexus* |
-| `mediaType` | Media type. | *banner* |
-| `adUnitCode` | Ad Unit Code. | */19968336/header-bid-tag-0* |
-| `size` | Media size. | *100x200* |
-| `hbBidder` | Bidder code. | *appnexus* |
-| `hbFormat` | Media format. | *banner* |
-| `hbPb` | Price bucket. | *0.50* |
-| `hbSize` | Media size. | *100x200* |
-| `placementId` | Placement ID. | *13144370* |
-
-### Bidder Specific Attributes
-
-This attributes are sent along with `BID_REQUESTED` and `BID_BIDDER_DONE` actions.
-
-| Attribute | Description | Example |
-|---|---|---|
-| `bidderCode` | Bidder code. | *appnexus* |
-| `referer` | Bid referer. | *https://www.example.com/page.html* |
+| Attribute | Description | Example | Actions |
+|---|---|---|---|
+| `bidderCode` | Bidder code. | *appnexus* | `BID_REQUESTED`, `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_BIDDER_DONE`, `BID_WON` |
+| `mediaType` | Media type. | *banner* | `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_WON` |
+| `adUnitCode` | Ad Unit Code. | */19968336/header-bid-tag-0* | `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_WON` |
+| `size` | Media size. | *100x200* | `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_WON` |
+| `hbBidder` | Bidder code. | *appnexus* | `BID_RESPONSE`, `BID_WON` |
+| `hbFormat` | Media format. | *banner* | `BID_RESPONSE`, `BID_WON` |
+| `hbPb` | Price bucket. | *0.50* | `BID_RESPONSE`, `BID_WON` |
+| `hbSize` | Media size. | *100x200* | `BID_RESPONSE`, `BID_WON` |
+| `placementId` | Placement ID. | *13144370* | `BID_WON` |
+| `hbAdid` | Ad ID. | *123456* | `BID_RESPONSE`, `BID_WON` |
+| `hbSource` | A/B test results. | *s2s* | `BID_RESPONSE`, `BID_WON` |
+| `referer` | Bid referer. | *https://www.example.com/page.html* | `BID_REQUESTED`, `BID_BIDDER_DONE` |
+| `cpm` | Price. | *1.5* | `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_WON` |
+| `auctionId` | Auction ID. | *efff3c19-15dd-408c-97de-226dd63b7909* | `BID_AUCTION_INIT`, `BID_REQUESTED`, `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_BIDDER_DONE`, `BID_AUCTION_END`, `BID_WON` |
+| `adId` | ad ID. | *3b76e59b74b8a58* | `BID_ADJUSTMENT`, `BID_RESPONSE`, `BID_WON` |
 
 ### Slot Specific Time Attributes
 

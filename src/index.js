@@ -1,6 +1,5 @@
-import * as nrvideo from 'newrelic-video-core'
-import Tracker from './tracker'
+// Re-export core
+export * from 'newrelic-video-core'
 
-nrvideo.PrebidTracker = Tracker
-
-module.exports = nrvideo
+// Export Prebid tracker
+export { PrebidTracker } from './tracker'

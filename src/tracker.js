@@ -1,17 +1,17 @@
-import * as nrvideo from 'newrelic-video-core'
-import { version } from '../package.json'
+import { Core, VideoTracker, Chrono, Log } from 'newrelic-video-core'
+import pkg from '../package.json'
 
-export default class PrebidTracker extends nrvideo.Tracker {
+export class PrebidTracker extends VideoTracker {
   /**
-   * This static methods initializes the GPT tracker. Will be automatically called.
+   * This static methods initializes the Prebid tracker.
    * @static
    * @returns {object} Tracker reference.
    */
   static init (pbjs) {
-    nrvideo.Log.debug('PrebidTracker init ', pbjs)
+    Log.debug('PrebidTracker init ', pbjs)
 
     // Look for an existing prebid tracker instance
-    let trackers = nrvideo.Core.getTrackers()
+    let trackers = Core.getTrackers()
     for (let i = 0 ; i < trackers.length ; i++) {
       if (trackers[i] instanceof PrebidTracker) {
         return null
@@ -26,7 +26,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
      */
     tracker._pbVersion = pbjs.version
 
-    nrvideo.Core.addTracker(tracker)
+    Core.addTracker(tracker)
     tracker.registerListeners(pbjs)
     return tracker
   }
@@ -46,31 +46,31 @@ export default class PrebidTracker extends nrvideo.Tracker {
      * Time since last BID_ADD_AD_UNITS event, in milliseconds.
      * @private
      */
-    this._timeSinceBidAddAdUnits = new nrvideo.Chrono()
+    this._timeSinceBidAddAdUnits = new Chrono()
 
     /**
      * Time since last BID_REQUEST_BIDS event, in milliseconds.
      * @private
      */
-    this._timeSinceBidRequestBids = new nrvideo.Chrono()
+    this._timeSinceBidRequestBids = new Chrono()
 
     /**
      * Time since last BID_AUCTION_INIT event, in milliseconds.
      * @private
      */
-    this._timeSinceBidAuctionInit = new nrvideo.Chrono()
+    this._timeSinceBidAuctionInit = new Chrono()
 
     /**
      * Time since last BID_AUCTION_END event, in milliseconds.
      * @private
      */
-    this._timeSinceBidAuctionEnd = new nrvideo.Chrono()
+    this._timeSinceBidAuctionEnd = new Chrono()
 
     /**
      * Time since last BID_SET_TARGETING event, in milliseconds.
      * @private
      */
-    this._timeSinceBidSetTargeting = new nrvideo.Chrono()
+    this._timeSinceBidSetTargeting = new Chrono()
 
     /**
      * Bidder specific attributes.
@@ -98,7 +98,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * @returns {String} Tracker version.
    */
   getTrackerVersion () {
-    return version
+    return pkg.version
   }
 
   /**
@@ -107,7 +107,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
   registerListeners (pbjs) {
     pbjs.onEvent('auctionInit', this.onAuctionInit.bind(this))
     pbjs.onEvent('auctionEnd', this.onAuctionEnd.bind(this))
-    //pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
+    pbjs.onEvent('bidAdjustment', this.onBidAdjustment.bind(this))
     pbjs.onEvent('bidTimeout', this.onBidTimeout.bind(this))
     pbjs.onEvent('bidRequested', this.onBidRequested.bind(this))
     pbjs.onEvent('bidResponse', this.onBidResponse.bind(this))
@@ -117,6 +117,11 @@ export default class PrebidTracker extends nrvideo.Tracker {
     pbjs.onEvent('addAdUnits', this.onAddAdUnits.bind(this))
     pbjs.onEvent('adRenderFailed', this.onAdRenderFailed.bind(this))
     pbjs.onEvent('bidderDone', this.onBidderDone.bind(this))
+    // pbjs.onEvent('bidRejected', this.onBidRejected.bind(this))
+    // pbjs.onEvent('bidAccepted', this.onBidAccepted.bind(this))
+    // pbjs.onEvent('bidderError', this.onBidderError.bind(this))
+    pbjs.onEvent('adRenderSucceeded', this.onAdRenderSucceeded.bind(this))
+    pbjs.onEvent('auctionDebug', this.onAuctionDebug.bind(this))
   }
 
   /**
@@ -138,33 +143,51 @@ export default class PrebidTracker extends nrvideo.Tracker {
   }
 
   /**
-   * Parses slot specific (ad unit) attributes.
+   * Parses attributes.
    */
-  parseSlotSpecificAttributes (data) {
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "mediaType": data["mediaType"],
-      "adUnitCode": data["adUnitCode"],
-      "size": data["width"] + 'x' + data["height"]
+  parseAttributes (data) {
+    let attr = {};
+
+    this.assignKeyFrom(attr, "mediaType", data)
+    this.assignKeyFrom(attr, "adUnitCode", data)
+    this.assignKeyFrom(attr, "adId", data)
+    this.assignKeyFrom(attr, "bidderCode", data)
+
+    if ("width" in data && "height" in data) {
+      attr["size"] = data["width"] + 'x' + data["height"]
     }
 
-    if (data["adserverTargeting"] != undefined) {
-      attr = Object.assign(attr, {
-        "hbBidder" : data["adserverTargeting"]["hb_bidder"],
-        "hbFormat" : data["adserverTargeting"]["hb_format"],
-        "hbPb" : data["adserverTargeting"]["hb_pb"],
-        "hbSize" : data["adserverTargeting"]["hb_size"],
-        //"hbAdid" : data["adserverTargeting"]["hb_adid"],
-        //"hbSource" : data["adserverTargeting"]["hb_source"]
-      })
+    if ("refererInfo" in data) {
+      this.assignKeyFrom(attr, "referer", data["refererInfo"])
+    }
+
+    this.assignKeyFrom(attr, "cpm", data)
+    this.assignKeyFrom(attr, "auctionId", data)
+
+    if ("adserverTargeting" in data) {
+      let adserverTargeting = data["adserverTargeting"]
+      this.assignKeyFrom(attr, "hb_bidder", adserverTargeting, "hbBidder")
+      this.assignKeyFrom(attr, "hb_format", adserverTargeting, "hbFormat")
+
+      if ("hb_pb" in adserverTargeting) {
+        let hb_pb = adserverTargeting["hb_pb"]
+        let hbPbNum = Number(hb_pb)
+        if (isNaN(hbPbNum)) {
+          attr["hbPb"] = hb_pb
+        } else {
+          attr["hbPb"] = hbPbNum
+        }
+      }
+      
+      this.assignKeyFrom(attr, "hb_size", adserverTargeting, "hbSize")
+      this.assignKeyFrom(attr, "hb_adid", adserverTargeting, "hbAdid")
+      this.assignKeyFrom(attr, "hb_source", adserverTargeting, "hbSource")
     }
 
     if (Array.isArray(data["params"])) {
       if (data["params"].length > 0) {
         let firstParam = data["params"][0]
-        if (firstParam["placementId"] != undefined) {
-          attr["placementId"] = firstParam["placementId"]
-        }
+        this.assignKeyFrom(attr, "placementId", firstParam)
       }
     }
 
@@ -172,21 +195,10 @@ export default class PrebidTracker extends nrvideo.Tracker {
   }
 
   /**
-   * Parses bidder specific attributes.
-   */
-  parseBidderSpecificAttributes (data) {
-    let attr = {
-      "bidderCode": data["bidderCode"],
-      "referer": data["refererInfo"]["referer"]
-    }
-    return attr
-  }
-
-  /**
    * Add timer to bidder
    */
   addTimerToBidder (bidderCode, timerName) {
-    let crono = new nrvideo.Chrono()
+    let crono = new Chrono()
     crono.start()
     if (this._bidderAttributes[bidderCode] == undefined) {
       this._bidderAttributes[bidderCode] = {}
@@ -198,7 +210,7 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Add timer to slot
    */
   addTimerToSlot (adUnitCode, timerName) {
-    let crono = new nrvideo.Chrono()
+    let crono = new Chrono()
     crono.start()
     if (this._slotAttributes[adUnitCode] == undefined) {
       this._slotAttributes[adUnitCode] = {}
@@ -234,8 +246,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'auctionInit' event.
    */
   onAuctionInit (data) {
-    nrvideo.Log.debug('onAuctionInit, data =', data)
-    this.send('BID_AUCTION_INIT', this.generateBidGenericAttributes())
+    Log.debug('onAuctionInit, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_AUCTION_INIT', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAuctionInit.start()
   }
 
@@ -243,36 +256,36 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'auctionEnd' event.
    */
   onAuctionEnd (data) {
-    nrvideo.Log.debug('onAuctionEnd, data =', data)
-    this.send('BID_AUCTION_END', this.generateBidGenericAttributes())
+    Log.debug('onAuctionEnd, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_AUCTION_END', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAuctionEnd.start()
   }
 
   /**
    * Called once Prebid fires 'bidAdjustment' event.
    */
-  /*
   onBidAdjustment (data) {
-    nrvideo.Log.debug('onBidAdjustment, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    Log.debug('onBidAdjustment, data =', data)
+    let attr = this.parseAttributes(data)
     this.send('BID_ADJUSTMENT', this.generateBidGenericAttributes(attr))
   }
-  */
 
   /**
    * Called once Prebid fires 'bidTimeout' event.
    */
   onBidTimeout (data) {
-    nrvideo.Log.debug('onBidTimeout, data =', data)
-    this.send('BID_TIMEOUT', this.generateBidGenericAttributes())
+    Log.debug('onBidTimeout, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_TIMEOUT', this.generateBidGenericAttributes(attr))
   }
 
   /**
    * Called once Prebid fires 'bidRequested' event.
    */
   onBidRequested (data) {
-    nrvideo.Log.debug('onBidRequested, data =', data)
-    let attr = this.parseBidderSpecificAttributes(data)
+    Log.debug('onBidRequested, data =', data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_REQUESTED', this.generateBidGenericAttributes(attr))
     this.addTimerToBidder(attr["bidderCode"], "timeSinceBidRequested")
@@ -282,8 +295,8 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'bidResponse' event.
    */
   onBidResponse (data) {
-    nrvideo.Log.debug('onBidResponse, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    Log.debug('onBidResponse, data =', data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_RESPONSE', this.generateBidGenericAttributes(attr))
@@ -295,8 +308,8 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'bidWon' event.
    */
   onBidWon (data) {
-    nrvideo.Log.debug('onBidWon, data =', data)
-    let attr = this.parseSlotSpecificAttributes(data)
+    Log.debug('onBidWon, data =', data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     attr = this.generateTimerAttributesForSlot(attr["adUnitCode"], attr)
     this.send('BID_WON', this.generateBidGenericAttributes(attr))
@@ -308,8 +321,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'setTargeting' event.
    */
   onSetTargeting (data) {
-    nrvideo.Log.debug('onSetTargeting, data =', data)
-    this.send('BID_SET_TARGETING', this.generateBidGenericAttributes())
+    Log.debug('onSetTargeting, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_SET_TARGETING', this.generateBidGenericAttributes(attr))
     this._timeSinceBidSetTargeting.start()
   }
 
@@ -317,8 +331,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'requestBids' event.
    */
   onRequestBids (data) {
-    nrvideo.Log.debug('onRequestBids, data =', data)
-    this.send('BID_REQUEST_BIDS', this.generateBidGenericAttributes())
+    Log.debug('onRequestBids, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_REQUEST_BIDS', this.generateBidGenericAttributes(attr))
     this._timeSinceBidRequestBids.start()
   }
 
@@ -326,8 +341,9 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'addAdUnits' event.
    */
   onAddAdUnits (data) {
-    nrvideo.Log.debug('onAddAdUnits, data =', data)
-    this.send('BID_ADD_AD_UNITS', this.generateBidGenericAttributes())
+    Log.debug('onAddAdUnits, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_ADD_AD_UNITS', this.generateBidGenericAttributes(attr))
     this._timeSinceBidAddAdUnits.start()
   }
 
@@ -335,18 +351,62 @@ export default class PrebidTracker extends nrvideo.Tracker {
    * Called once Prebid fires 'adRenderFailed' event.
    */
   onAdRenderFailed (data) {
-    nrvideo.Log.debug('onAdRenderFailed, data =', data)
-    this.send('BID_AD_RENDER_FAILED', this.generateBidGenericAttributes())
+    Log.debug('onAdRenderFailed, data =', data)
+    let attr = this.parseAttributes(data)
+    this.send('BID_AD_RENDER_FAILED', this.generateBidGenericAttributes(attr))
   }
 
   /**
    * Called once Prebid fires 'bidderDone' event.
    */
   onBidderDone (data) {
-    nrvideo.Log.debug('onBidderDone, data =', data)
-    let attr = this.parseBidderSpecificAttributes(data)
+    Log.debug('onBidderDone, data =', data)
+    let attr = this.parseAttributes(data)
     attr = this.generateTimerAttributesForBidder(attr["bidderCode"], attr)
     this.send('BID_BIDDER_DONE', this.generateBidGenericAttributes(attr))
     this.addTimerToBidder(attr["bidderCode"], "timeSinceBidBidderDone")
+  }
+
+  // onBidRejected (data) {
+  //   Log.debug('onBidRejected, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BID_REJECTED', this.generateBidGenericAttributes(attr))
+  // }
+
+  // onBidAccepted (data) {
+  //   Log.debug('onBidAccepted, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BID_ACCEPTED', this.generateBidGenericAttributes(attr))
+  // }
+
+  // onBidderError (data) {
+  //   Log.debug('onBidderError, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BIDDER_ERROR', this.generateBidGenericAttributes(attr))
+  // }
+  
+  onAdRenderSucceeded (data) {
+    Log.debug('onAdRenderSucceeded, data =', data)
+    let attr = this.parseAttributes(data["bid"])
+    this.send('BID_AD_RENDER_SUCCEEDED', this.generateBidGenericAttributes(attr))
+  }
+
+  onAuctionDebug (data) {
+    Log.debug('onAuctionDebug, data =', data)
+  }
+
+  // Private methods
+
+  assignKeyFrom (obj, key, data, rename_key = "") {
+    if (key in data) {
+      if (rename_key !== "") {
+        obj[rename_key] = data[key]
+      } else {
+        obj[key] = data[key]
+      }
+      return true
+    } else {
+      return false
+    }
   }
 }

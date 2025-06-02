@@ -1,15 +1,15 @@
 {
   "name": "newrelic-prebid",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "New Relic tracker for Prebid",
   "main": "src/index.js",
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
-    "watch": "webpack -p --progress --color --watch",
-    "watch:dev": "webpack --progress --color --watch",
+    "watch": "webpack --mode production --progress --color --watch",
+    "watch:dev": "webpack --mode development --progress --color --watch",
     "prezip": "npm run build",
-    "zip": "zip -P newrelic -x '*.DS_Store' 'samples/agent.js' '*.map' -r prebid.zip dist samples README.md CHANGELOG.md EULA.md",
+    "zip": "zip -P newrelic -x '*.DS_Store' 'samples/agent.js' '*.map' -r prebid.zip dist samples README.md EULA.md",
     "clean": "rm -rf dist *.zip"
   },
   "author": "Andreu Santarén Llop",
@@ -18,10 +18,10 @@
     "newrelic-video-core": "github:newrelic/video-core-js"
   },
   "devDependencies": {
-    "babel-core": "^6.25.0",
-    "babel-loader": "^7.1.1",
-    "babel-preset-env": "^1.6.0",
-    "webpack": "^5.34.0",
-    "webpack-cli": "^4.6.0"
+    "@babel/preset-env": "^7.27.2",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^10.0.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
   }
 }
