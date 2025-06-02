@@ -72,8 +72,6 @@ The following event names are sent by the tracker as Browser Agent `Custom Event
 | `BID_ADJUSTMENT` | A bid was adjusted. | *bidAdjustment* |
 | `BID_AD_RENDER_SUCCEEDED` | Ad rendering succeeded. | *adRenderSucceeded* |
 
-TODO: add new actions
-
 Check out the following link for more information on [Prebid events](http://prebid.org/dev-docs/publisher-api-reference.html#module_pbjs.onEvent).
 
 ### Common Attributes
