@@ -117,9 +117,9 @@ export class PrebidTracker extends VideoTracker {
     pbjs.onEvent('addAdUnits', this.onAddAdUnits.bind(this))
     pbjs.onEvent('adRenderFailed', this.onAdRenderFailed.bind(this))
     pbjs.onEvent('bidderDone', this.onBidderDone.bind(this))
-    pbjs.onEvent('bidRejected', this.onBidRejected.bind(this))
-    pbjs.onEvent('bidAccepted', this.onBidAccepted.bind(this))
-    pbjs.onEvent('bidderError', this.onBidderError.bind(this))
+    // pbjs.onEvent('bidRejected', this.onBidRejected.bind(this))
+    // pbjs.onEvent('bidAccepted', this.onBidAccepted.bind(this))
+    // pbjs.onEvent('bidderError', this.onBidderError.bind(this))
     pbjs.onEvent('adRenderSucceeded', this.onAdRenderSucceeded.bind(this))
     pbjs.onEvent('auctionDebug', this.onAuctionDebug.bind(this))
   }
@@ -367,29 +367,32 @@ export class PrebidTracker extends VideoTracker {
     this.addTimerToBidder(attr["bidderCode"], "timeSinceBidBidderDone")
   }
 
-  onBidRejected (data) {
-    Log.debug('TODO: onBidRejected, data =', data)
-    //TODO
-  }
+  // onBidRejected (data) {
+  //   Log.debug('onBidRejected, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BID_REJECTED', this.generateBidGenericAttributes(attr))
+  // }
 
-  onBidAccepted (data) {
-    Log.debug('TODO: onBidAccepted, data =', data)
-    //TODO
-  }
+  // onBidAccepted (data) {
+  //   Log.debug('onBidAccepted, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BID_ACCEPTED', this.generateBidGenericAttributes(attr))
+  // }
 
-  onBidderError (data) {
-    Log.debug('TODO: onBidderError, data =', data)
-    //TODO
-  }
+  // onBidderError (data) {
+  //   Log.debug('onBidderError, data =', data)
+  //   let attr = this.parseAttributes(data)
+  //   this.send('BIDDER_ERROR', this.generateBidGenericAttributes(attr))
+  // }
   
   onAdRenderSucceeded (data) {
-    Log.debug('TODO: onAdRenderSucceeded, data =', data)
-    //TODO
+    Log.debug('onAdRenderSucceeded, data =', data)
+    let attr = this.parseAttributes(data["bid"])
+    this.send('BID_AD_RENDER_SUCCEEDED', this.generateBidGenericAttributes(attr))
   }
 
   onAuctionDebug (data) {
-    Log.debug('TODO: onAuctionDebug, data =', data)
-    //TODO
+    Log.debug('onAuctionDebug, data =', data)
   }
 
   // Private methods

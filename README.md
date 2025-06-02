@@ -70,6 +70,7 @@ The following event names are sent by the tracker as Browser Agent `Custom Event
 | `BID_AD_RENDER_FAILED` | Ad rendering failed. | *adRenderFailed* |
 | `BID_BIDDER_DONE` | A bidder has signaled they are done responding. | *bidderDone* |
 | `BID_ADJUSTMENT` | A bid was adjusted. | *bidAdjustment* |
+| `BID_AD_RENDER_SUCCEEDED` | Ad rendering succeeded. | *adRenderSucceeded* |
 
 TODO: add new actions
 
