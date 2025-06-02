@@ -1,9 +1,9 @@
-import {Core, VideoTracker, Chrono, Log} from 'newrelic-video-core'
-import packageInfo from '../package.json'
+import { Core, VideoTracker, Chrono, Log } from 'newrelic-video-core'
+import pkg from '../package.json'
 
 export class PrebidTracker extends VideoTracker {
   /**
-   * This static methods initializes the GPT tracker. Will be automatically called.
+   * This static methods initializes the Prebid tracker.
    * @static
    * @returns {object} Tracker reference.
    */
@@ -98,7 +98,7 @@ export class PrebidTracker extends VideoTracker {
    * @returns {String} Tracker version.
    */
   getTrackerVersion () {
-    return packageInfo.version
+    return pkg.version
   }
 
   /**
@@ -150,6 +150,7 @@ export class PrebidTracker extends VideoTracker {
 
     this.assignKeyFrom(attr, "mediaType", data)
     this.assignKeyFrom(attr, "adUnitCode", data)
+    this.assignKeyFrom(attr, "adId", data)
     this.assignKeyFrom(attr, "bidderCode", data)
 
     if ("width" in data && "height" in data) {
