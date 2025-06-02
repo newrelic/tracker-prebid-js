@@ -1,6 +1,6 @@
 {
   "name": "newrelic-prebid",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "New Relic tracker for Prebid",
   "main": "src/index.js",
   "scripts": {
