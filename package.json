@@ -1,6 +1,6 @@
 {
   "name": "newrelic-prebid",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "New Relic tracker for Prebid",
   "main": "src/index.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "author": "Andreu Santarén Llop",
   "license": "MIT",
   "dependencies": {
-    "newrelic-video-core": "github:newrelic/video-core-js"
+    "newrelic-tracker-core": "github:newrelic/tracker-core-js#0.1.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",

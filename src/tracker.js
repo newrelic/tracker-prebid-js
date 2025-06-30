@@ -1,7 +1,7 @@
-import { Core, VideoTracker, Chrono, Log } from 'newrelic-video-core'
+import { Core, Tracker, Chrono, Log } from 'newrelic-tracker-core'
 import pkg from '../package.json'
 
-export class PrebidTracker extends VideoTracker {
+export class PrebidTracker extends Tracker {
   /**
    * This static methods initializes the Prebid tracker.
    * @static
