@@ -40,7 +40,7 @@ To initialize the tracker, call method `init()` just when the prebid objejct is 
   
   pbjs.que.push(function() {
     // Init Prebid tracker
-    nrvideo.PrebidTracker.init(pbjs)
+    nrprebid.PrebidTracker.init(pbjs)
 
     pbjs.addAdUnits(adUnits);
     pbjs.requestBids({
@@ -52,9 +52,15 @@ To initialize the tracker, call method `init()` just when the prebid objejct is 
 
 ## Data Model
 
-### Actions
+The following event names are sent by the tracker as Browser Agent custom events, 
+with event type `PrebidEvent`. To view the data, open NROne and run the following
+NRQL request:
 
-The following event names are sent by the tracker as Browser Agent `Custom Events`.
+```sql
+FROM PrebidEvent SELECT *
+```
+
+### Actions
 
 | Action Name | Description | Prebid Event |
 |---|---|---|
