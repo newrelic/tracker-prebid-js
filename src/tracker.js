@@ -76,13 +76,13 @@ export class PrebidTracker extends Tracker {
      * Bidder specific attributes.
      * @private
      */
-    this._bidderAttributes = {}
+    this._bidderAttributes = Object.create(null)
 
     /**
      * Slot specific attributes.
      * @private
      */
-    this._slotAttributes = {}
+    this._slotAttributes = Object.create(null)
   }
 
   /**
@@ -128,7 +128,7 @@ export class PrebidTracker extends Tracker {
    * Generate bid generic attributes.
    */
   generateBidGenericAttributes (attributes) {
-    attributes = attributes || {}
+    attributes = attributes || Object.create(null)
 
     attributes["libVersion"] = this._pbVersion
     
@@ -146,7 +146,7 @@ export class PrebidTracker extends Tracker {
    * Parses attributes.
    */
   parseAttributes (data) {
-    let attr = {};
+    let attr = Object.create(null);
 
     this.assignKeyFrom(attr, "mediaType", data)
     this.assignKeyFrom(attr, "adUnitCode", data)
@@ -201,7 +201,7 @@ export class PrebidTracker extends Tracker {
     let crono = new Chrono()
     crono.start()
     if (this._bidderAttributes[bidderCode] == undefined) {
-      this._bidderAttributes[bidderCode] = {}
+      this._bidderAttributes[bidderCode] = Object.create(null)
     }
     this._bidderAttributes[bidderCode][timerName] = crono
   }
@@ -213,7 +213,7 @@ export class PrebidTracker extends Tracker {
     let crono = new Chrono()
     crono.start()
     if (this._slotAttributes[adUnitCode] == undefined) {
-      this._slotAttributes[adUnitCode] = {}
+      this._slotAttributes[adUnitCode] = Object.create(null)
     }
     this._slotAttributes[adUnitCode][timerName] = crono
   }
